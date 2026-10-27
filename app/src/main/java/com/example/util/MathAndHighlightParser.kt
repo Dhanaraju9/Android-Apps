@@ -119,10 +119,40 @@ object MathAndHighlightParser {
         return resultParagraphs
     }
 
-    private fun isYearRange(num: String, den: String): Boolean {
-        val n = num.toIntOrNull() ?: return false
-        val d = den.toIntOrNull() ?: return false
-        return (n in 1800..2099) && ((d in 0..99) || (d in 1800..2099))
+    private fun isIndicCombiningOrMatra(ch: Char): Boolean {
+        val code = ch.code
+        val type = Character.getType(ch)
+        if (type == Character.NON_SPACING_MARK.toInt() ||
+            type == Character.COMBINING_SPACING_MARK.toInt() ||
+            type == Character.ENCLOSING_MARK.toInt()
+        ) {
+            return true
+        }
+        // Telugu combining signs, matras, virama, and length marks
+        if (code in 0x0C00..0x0C04 || code in 0x0C3C..0x0C56 || code in 0x0C62..0x0C63) {
+            return true
+        }
+        return false
+    }
+
+    private fun isVirama(ch: Char): Boolean {
+        val code = ch.code
+        return code == 0x0C4D || code == 0x094D || code == 0x0CCD || code == 0x0BCD || code == 0x0D4D || code == 0x09CD || code == 0x0A4D || code == 0x0ACD || code == 0x0B4D
+    }
+
+    private fun snapToGraphemeBoundary(text: String, index: Int, isStart: Boolean): Int {
+        if (text.isEmpty()) return 0
+        var idx = index.coerceIn(0, text.length)
+        if (isStart) {
+            while (idx > 0 && idx < text.length && (isIndicCombiningOrMatra(text[idx]) || isVirama(text[idx - 1]))) {
+                idx--
+            }
+        } else {
+            while (idx < text.length && (isIndicCombiningOrMatra(text[idx]) || (idx > 0 && isVirama(text[idx - 1])))) {
+                idx++
+            }
+        }
+        return idx
     }
 
     private fun normalizeLatexAndMath(input: String): String {
@@ -136,29 +166,7 @@ object MathAndHighlightParser {
             res = res.replace(macro, symbol)
         }
 
-        // Convert mathematical numeric fractions (e.g. 1/10, -3/4, 22/7) to vertical LaTeX proper fractions \frac{n}{d}
-        // Strictly protect dates (e.g. 26/09/2026), year ranges (2024/25), URLs, or normal text words with slashes
-        val mathFractionRegex = Regex("""(?<!\d/)(?<![A-Za-z0-9/._-])(-?\d+)\s*/\s*(\d+)(?!/\d)(?![A-Za-z0-9/._-])""")
-        res = res.replace(mathFractionRegex) { match ->
-            val num = match.groupValues[1]
-            val den = match.groupValues[2]
-            if (isYearRange(num, den)) {
-                match.value
-            } else {
-                "\\frac{$num}{$den}"
-            }
-        }
-
-        // Parenthesized algebraic fractions e.g. (x + 1)/(x - 1)
-        val parenthesizedFractionRegex = Regex("""\(([a-zA-Z0-9\s+\-*^.]+)\)\s*/\s*\(([a-zA-Z0-9\s+\-*^.]+)\)""")
-        res = res.replace(parenthesizedFractionRegex) { match ->
-            val num = match.groupValues[1].trim()
-            val den = match.groupValues[2].trim()
-            "\\frac{$num}{$den}"
-        }
-
-        res = res.replace(" / ", " ÷ ")
-            .replace(">=", " ≥ ")
+        res = res.replace(">=", " ≥ ")
             .replace("<=", " ≤ ")
             .replace("!=", " ≠ ")
             .replace("~=", " ≈ ")
@@ -168,22 +176,39 @@ object MathAndHighlightParser {
     }
 
     private fun computeHighlightIntervals(text: String, highlights: List<HighlightRange>): List<HighlightInterval> {
-        if (highlights.isEmpty()) return emptyList()
+        if (highlights.isEmpty() || text.isEmpty()) return emptyList()
 
         val intervals = mutableListOf<HighlightInterval>()
         val textLower = text.lowercase()
 
         for (hl in highlights) {
-            if (hl.startIndex in 0..text.length && hl.endIndex in (hl.startIndex + 1)..text.length) {
-                intervals.add(HighlightInterval(hl.startIndex, hl.endIndex, hl.type))
+            val hasValidIndices = hl.startIndex in 0 until text.length &&
+                hl.endIndex in (hl.startIndex + 1)..text.length
+            val indexMatchesPhrase = hasValidIndices && (
+                hl.text.isBlank() ||
+                    text.substring(hl.startIndex, hl.endIndex).trim().equals(hl.text.trim(), ignoreCase = true)
+                )
+
+            if (indexMatchesPhrase) {
+                val safeStart = snapToGraphemeBoundary(text, hl.startIndex, isStart = true)
+                val safeEnd = snapToGraphemeBoundary(text, hl.endIndex, isStart = false)
+                if (safeEnd > safeStart) {
+                    intervals.add(HighlightInterval(safeStart, safeEnd, hl.type))
+                }
             } else if (hl.text.isNotBlank()) {
                 val phrase = hl.text.trim().lowercase()
-                var startIndex = 0
-                while (startIndex < textLower.length) {
-                    val idx = textLower.indexOf(phrase, startIndex)
-                    if (idx == -1) break
-                    intervals.add(HighlightInterval(idx, idx + phrase.length, hl.type))
-                    startIndex = idx + phrase.length
+                if (phrase.isNotEmpty()) {
+                    var startIndex = 0
+                    while (startIndex < textLower.length) {
+                        val idx = textLower.indexOf(phrase, startIndex)
+                        if (idx == -1) break
+                        val safeStart = snapToGraphemeBoundary(text, idx, isStart = true)
+                        val safeEnd = snapToGraphemeBoundary(text, idx + phrase.length, isStart = false)
+                        if (safeEnd > safeStart) {
+                            intervals.add(HighlightInterval(safeStart, safeEnd, hl.type))
+                        }
+                        startIndex = idx + phrase.length
+                    }
                 }
             }
         }
@@ -209,13 +234,7 @@ object MathAndHighlightParser {
         val trimmed = line.trim()
         if (trimmed.startsWith("$$") && trimmed.endsWith("$$")) return true
         if (trimmed.startsWith("\\[") && trimmed.endsWith("\\]")) return true
-        if (trimmed.contains("\\frac") || trimmed.contains("\\dfrac") || trimmed.contains("\\int")) {
-            if (!trimmed.startsWith("What ") && !trimmed.startsWith("Which ") && !trimmed.startsWith("How ") && trimmed.length < 120) {
-                return true
-            }
-        }
-        val mathEqPattern = Pattern.compile("^[A-Za-z0-9,\\s₹%\\(\\)\\+\\−\\×\\÷\\=√\\^/¹²³⁴⁵⁶⁷⁸⁹ⁿ₀₁₂₃₄₅₆₇₈₉\\\\\\{\\}]{5,}\$")
-        return (trimmed.contains("=") || trimmed.contains("⇒")) && mathEqPattern.matcher(trimmed).matches() && !trimmed.contains("What ") && !trimmed.contains("Which ")
+        return false
     }
 
     private fun parseMathAndTextString(
@@ -388,25 +407,24 @@ object MathAndHighlightParser {
         var pos = 0
         val len = text.length
 
+        // Only match explicit caret powers (x^2) or square roots (√(x+1), √x).
+        // Never split normal prose on '/' slashes or native Unicode superscripts/subscripts.
         val tokenRegex = Pattern.compile(
-            "(\\(?[A-Za-z0-9_\\+\\−\\×\\.\\,\\s₹%\\²\\³\\ⁿ\\α\\β\\γ\\θ\\π]+\\)?\\s*/\\s*\\(?[A-Za-z0-9_\\+\\−\\×\\.\\,\\s₹%\\²\\³\\ⁿ\\α\\β\\γ\\θ\\π]+\\)?)" +
-            "|([A-Za-z0-9_\\(\\)]+\\^[A-Za-z0-9_\\(\\)\\+]+)" +
-            "|(√\\([^\\)]+\\)|√[0-9A-Za-z]+)" +
-            "|([A-Za-z0-9_\\(\\)]+[²³⁴⁵⁶⁷⁸⁹ⁿ⁺⁻])" +
-            "|([A-Za-z0-9_]+[₀₁₂₃₄₅₆₇₈₉])"
+            "([A-Za-z0-9_\\(\\)]+\\^[A-Za-z0-9_\\(\\)\\+]+)" +
+            "|(√\\([^\\)]+\\)|√[0-9A-Za-z]+)"
         )
 
         val matcher = tokenRegex.matcher(text)
         while (matcher.find()) {
-            val matchStart = matcher.start()
-            val matchEnd = matcher.end()
+            val matchStart = snapToGraphemeBoundary(text, matcher.start(), isStart = true)
+            val matchEnd = snapToGraphemeBoundary(text, matcher.end(), isStart = false)
 
             if (matchStart > pos) {
                 val nonMathText = text.substring(pos, matchStart)
                 elements.addAll(splitTextWithHighlights(nonMathText, offset + pos, highlights))
             }
 
-            val token = matcher.group()
+            val token = text.substring(matchStart, matchEnd)
             val matchedHl = getRangeHighlight(offset + matchStart, offset + matchEnd, highlights)
 
             val parsedToken = parseSingleMathToken(token, matchedHl != null, matchedHl?.type)
@@ -424,19 +442,6 @@ object MathAndHighlightParser {
     }
 
     private fun parseSingleMathToken(token: String, isHighlighted: Boolean, highlightType: String?): MathElement {
-        if (token.contains("/")) {
-            val slashIdx = token.indexOf('/')
-            val numStr = token.substring(0, slashIdx).trim().removeSurrounding("(", ")")
-            val denStr = token.substring(slashIdx + 1).trim().removeSurrounding("(", ")")
-
-            return MathElement.Fraction(
-                numerator = MathElement.TextSegment(numStr, isHighlighted, highlightType),
-                denominator = MathElement.TextSegment(denStr, isHighlighted, highlightType),
-                isHighlighted = isHighlighted,
-                highlightType = highlightType
-            )
-        }
-
         if (token.contains("^")) {
             val parts = token.split("^")
             val baseStr = parts[0].trim()
@@ -449,48 +454,10 @@ object MathAndHighlightParser {
             )
         }
 
-        val lastChar = token.lastOrNull()
-        if (lastChar != null && lastChar in "²³⁴⁵⁶⁷⁸⁹ⁿ⁺⁻") {
-            val baseStr = token.dropLast(1)
-            val expStr = when(lastChar) {
-                '²' -> "2"
-                '³' -> "3"
-                'ⁿ' -> "n"
-                '⁴' -> "4"
-                '⁵' -> "5"
-                '⁶' -> "6"
-                '⁷' -> "7"
-                '⁸' -> "8"
-                '⁹' -> "9"
-                else -> lastChar.toString()
-            }
-            return MathElement.Power(
-                base = MathElement.TextSegment(baseStr, isHighlighted, highlightType),
-                exponent = MathElement.TextSegment(expStr, isHighlighted, highlightType),
-                isHighlighted = isHighlighted,
-                highlightType = highlightType
-            )
-        }
-
         if (token.startsWith("√")) {
             val inner = token.substring(1).removeSurrounding("(", ")")
             return MathElement.Root(
                 radicand = MathElement.TextSegment(inner, isHighlighted, highlightType),
-                isHighlighted = isHighlighted,
-                highlightType = highlightType
-            )
-        }
-
-        if (lastChar != null && lastChar in "₀₁₂₃₄₅₆₇₈₉") {
-            val baseStr = token.dropLast(1)
-            val subStr = when(lastChar) {
-                '₀' -> "0"; '₁' -> "1"; '₂' -> "2"; '₃' -> "3"; '₄' -> "4"
-                '₅' -> "5"; '₆' -> "6"; '₇' -> "7"; '₈' -> "8"; '₉' -> "9"
-                else -> lastChar.toString()
-            }
-            return MathElement.Subscript(
-                base = MathElement.TextSegment(baseStr, isHighlighted, highlightType),
-                sub = MathElement.TextSegment(subStr, isHighlighted, highlightType),
                 isHighlighted = isHighlighted,
                 highlightType = highlightType
             )
@@ -513,28 +480,37 @@ object MathAndHighlightParser {
             val activeHl = highlights.find { globalIndex >= it.start && globalIndex < it.end }
 
             if (activeHl != null) {
-                val hlStartInText = maxOf(0, activeHl.start - startOffset)
-                val hlEndInText = minOf(len, activeHl.end - startOffset)
+                val rawStart = maxOf(pos, activeHl.start - startOffset)
+                val rawEnd = minOf(len, activeHl.end - startOffset)
+                val hlStartInText = snapToGraphemeBoundary(text, rawStart, isStart = true).coerceAtLeast(pos)
+                val hlEndInText = snapToGraphemeBoundary(text, rawEnd, isStart = false).coerceIn(hlStartInText, len)
 
                 if (hlStartInText > pos) {
                     result.add(MathElement.TextSegment(text.substring(pos, hlStartInText), false))
                 }
 
-                val highlightedChunk = text.substring(hlStartInText, hlEndInText)
-                result.add(MathElement.TextSegment(highlightedChunk, true, activeHl.type))
-
-                pos = hlEndInText
+                if (hlEndInText > hlStartInText) {
+                    val highlightedChunk = text.substring(hlStartInText, hlEndInText)
+                    result.add(MathElement.TextSegment(highlightedChunk, true, activeHl.type))
+                    pos = hlEndInText
+                } else {
+                    val fallbackEnd = (pos + 1).coerceAtMost(len)
+                    result.add(MathElement.TextSegment(text.substring(pos, fallbackEnd), false))
+                    pos = fallbackEnd
+                }
             } else {
                 val nextHl = highlights
                     .filter { it.start > globalIndex }
                     .minByOrNull { it.start }
 
-                val nextHlStartInText = if (nextHl != null) minOf(len, nextHl.start - startOffset) else len
-                val plainChunk = text.substring(pos, nextHlStartInText)
+                val rawNext = if (nextHl != null) minOf(len, nextHl.start - startOffset) else len
+                val nextHlStartInText = snapToGraphemeBoundary(text, rawNext, isStart = true).coerceIn(pos, len)
+                val safeNext = if (nextHlStartInText > pos) nextHlStartInText else len
+                val plainChunk = text.substring(pos, safeNext)
                 if (plainChunk.isNotEmpty()) {
                     result.add(MathElement.TextSegment(plainChunk, false))
                 }
-                pos = nextHlStartInText
+                pos = safeNext
             }
         }
 

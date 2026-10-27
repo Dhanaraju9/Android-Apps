@@ -475,7 +475,7 @@ private fun DedicatedLegalDocumentView(
                 DocSection("ref_4", "4. Cancellation of Active Subscriptions", "You can cancel your subscription plan renewal at any moment. Your premium features will stay active until the current billing cycle expires."),
                 DocSection("ref_5", "5. Refund Gateway & Processing Cycle", "All authorized refunds are processed through Razorpay back into the source banking account. This generally takes 5-7 business working days."),
                 DocSection("ref_6", "6. Fraudulent Dispute Submissions", "Initiating false payment chargebacks or chargeback fraud on genuine active subscriptions will lead to automatic, instant candidate profile bans."),
-                DocSection("ref_7", "7. Dedicated Billing Support Helpdesk", "Need clarification regarding a billing deduction? Reach out directly to our official candidate support desk at Sobhadhanaraju1@gmail.com or WhatsApp +91 94935 12768.")
+                DocSection("ref_7", "7. Dedicated Billing Support Helpdesk", "Need clarification regarding a billing deduction? Reach out directly to our official candidate support desk at sobhadhanaraju0@gmail.com or WhatsApp +91 94935 12768.")
             )
             LegalDocType.PRIVACY_POLICY -> listOf(
                 DocSection("priv_1", "1. Information We Collect", "We gather specific data including your display name, registered email address, mobile number, and chosen state/exam filters to set up your account profile."),
@@ -488,7 +488,7 @@ private fun DedicatedLegalDocumentView(
                 DocSection("priv_8", "8. Specific Data Retention Guidelines", "We retain mock performance databases as long as your candidate account remains registered and active to keep analytics charts accurate."),
                 DocSection("priv_9", "9. Safety of Candidate Children", "Our educational materials are engineered exclusively for adult candidates preparing for governmental recruitment examinations."),
                 DocSection("priv_10", "10. Major Policy Revision Notifications", "Whenever we revise privacy steps, we notify you transparently via high-priority push messages or dynamic main screen pop-up notifications."),
-                DocSection("priv_11", "11. Dedicated Privacy Support Desk", "For privacy inquiries or data assistance, reach our official support desk at Sobhadhanaraju1@gmail.com or WhatsApp +91 94935 12768.")
+                DocSection("priv_11", "11. Dedicated Privacy Support Desk", "For privacy inquiries or data assistance, reach our official support desk at sobhadhanaraju0@gmail.com or WhatsApp +91 94935 12768.")
             )
             LegalDocType.TERMS_CONDITIONS -> listOf(
                 DocSection("t_1", "1. Binding Agreement Acceptance", "By downloading, registering, or using $resolvedAppName, you agree to comply with and be bound by these legal, governing terms."),
@@ -743,7 +743,7 @@ private fun DedicatedFaqView(
             SupportFaq("df_3", "Are there free trial mock tests available?", "Yes! We provide free full-length mock tests, subject-wise practice sets, and daily current affairs digests so you can experience the platform before upgrading.", order = 3),
             SupportFaq("df_4", "How do I upgrade to the PRO plan?", "Tap on the Subscription card on your dashboard or Profile screen, choose your preferred validity plan, and complete payment via UPI, Card, or Google Play.", order = 4),
             SupportFaq("df_5", "What secure payment gateways are supported?", "We support UPI (Google Pay, PhonePe, Paytm, BHIM), Credit/Debit cards, Net Banking via Razorpay, and Google Play Billing.", order = 5),
-            SupportFaq("df_6", "Payment was debited but subscription is not unlocked.", "Tap the WhatsApp Support card (+91 94935 12768) or email Sobhadhanaraju1@gmail.com with your UPI Reference / Transaction ID for priority manual activation.", order = 6),
+            SupportFaq("df_6", "Payment was debited but subscription is not unlocked.", "Tap the WhatsApp Support card (+91 94935 12768) or email sobhadhanaraju0@gmail.com with your UPI Reference / Transaction ID for priority manual activation.", order = 6),
             SupportFaq("df_7", "How do I report an error in an MCQ or Mock Test?", "Inside any practice or mock test screen, tap the Flag icon on the question card to submit a report to our academic verification team or message us on WhatsApp.", order = 7),
             SupportFaq("df_8", "Can I pause an active mock test and resume later?", "Yes! Practice and mock sessions auto-save locally so you can resume right where you left off.", order = 8),
             SupportFaq("df_9", "What is the ₹99 Offline Subscription Plan and how does it work?", "The ₹99 Offline Pass allows you to download and practice MCQs offline without an internet connection. Once active, you can access downloaded content through Sets, Subtopics, and Downloaded Materials anytime.", order = 9),
@@ -1027,12 +1027,12 @@ private fun DedicatedContactView(
                     Box(modifier = Modifier.weight(1f)) {
                         ContactChannelCard(
                             title = "Email Support",
-                            value = email.ifBlank { "Sobhadhanaraju1@gmail.com" },
+                            value = email.ifBlank { "sobhadhanaraju0@gmail.com" },
                             buttonText = "Send Email",
                             accentColor = accentColor,
                             icon = Icons.Default.Email,
                             onClick = {
-                                val targetMail = email.ifBlank { "Sobhadhanaraju1@gmail.com" }
+                                val targetMail = email.ifBlank { "sobhadhanaraju0@gmail.com" }
                                 try {
                                     val intent = Intent(Intent.ACTION_SENDTO).apply {
                                         data = Uri.parse("mailto:$targetMail")
@@ -1419,7 +1419,7 @@ private fun DedicatedHelpCenterView(
         listOf(
             Pair(
                 "My payment was debited via UPI, how do I unlock PRO immediately?",
-                "If your payment was deducted and your plan hasn't activated automatically within 2 minutes, tap the WhatsApp Support card (+91 94935 12768) or Email (Sobhadhanaraju1@gmail.com) with your 12-digit UPI Reference ID for priority activation."
+                "If your payment was deducted and your plan hasn't activated automatically within 2 minutes, tap the WhatsApp Support card (+91 94935 12768) or Email (sobhadhanaraju0@gmail.com) with your 12-digit UPI Reference ID for priority activation."
             ),
             Pair(
                 "How do I switch between English and Bilingual/Regional language in Mock Tests?",
@@ -1633,7 +1633,7 @@ private fun DedicatedHelpCenterView(
                 HelpCenterLuxuryChannelCard(
                     title = "Official Email Support Desk",
                     subtitle = "Detailed queries, billing receipts & feedback",
-                    contactValue = supportConfig.supportEmail.ifBlank { "Sobhadhanaraju1@gmail.com" },
+                    contactValue = supportConfig.supportEmail.ifBlank { "sobhadhanaraju0@gmail.com" },
                     badgeText = "OFFICIAL DESK",
                     icon = Icons.Default.Email,
                     iconTint = Color(0xFFB45309),
@@ -2462,7 +2462,7 @@ private fun LegalSupportHubView(
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Access our priority candidate support channels (WhatsApp +91 94935 12768, Email Sobhadhanaraju1@gmail.com, Telegram), interactive Help Center, and official legal policies.",
+                    text = "Access our priority candidate support channels (WhatsApp +91 94935 12768, Email sobhadhanaraju0@gmail.com, Telegram), interactive Help Center, and official legal policies.",
                     fontSize = 12.sp,
                     color = Color(0xFF475569),
                     lineHeight = 18.sp

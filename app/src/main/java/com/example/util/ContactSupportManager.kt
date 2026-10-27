@@ -291,7 +291,7 @@ object ContactSupportManager {
     ) {
         val cfg = getConfig(context)
         val activeApp = com.example.data.SampleData.getActiveApp()
-        val email = cfg.supportEmail.trim().ifBlank { "Sobhadhanaraju1@gmail.com" }
+        val email = cfg.supportEmail.trim().ifBlank { "sobhadhanaraju0@gmail.com" }
         val subject = "[${activeApp.name}] Support: $issueCategory"
         val body = buildPrefilledMessage(issueCategory, customDetails, extraContext)
         try {

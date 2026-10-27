@@ -29,12 +29,12 @@ import java.util.concurrent.TimeUnit
  * 3. Firebase Cloud Storage (PDFs, Diagrams, Banners)
  * 4. Firebase Cloud Messaging (FCM Push Notifications)
  *
- * Configured for account: sobhadhanaraju1@gmail.com
+ * Configured for account: sobhadhanaraju0@gmail.com
  */
 object FirebaseSyncManager {
     private const val TAG = "FirebaseSyncManager"
 
-    const val ADMIN_EMAIL = "sobhadhanaraju1@gmail.com"
+    const val ADMIN_EMAIL = "sobhadhanaraju0@gmail.com"
 
     val auth: FirebaseAuth
         get() = FirebaseAuth.getInstance()

@@ -13,7 +13,7 @@ android {
     buildToolsVersion = "36.0.0"
 
     defaultConfig {
-        applicationId = "com.aistudio.syllabus.abcde"
+        applicationId = "com.aistudio.syllabus.groups"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -29,7 +29,7 @@ android {
             ?: System.getenv("RAZORPAY_KEY_SECRET")
             ?: "rzp_sec_live_T89U1OXHFIQbHa"
 
-        buildConfigField("String", "APP_ID", "\"com.example.syllabus\"")
+        buildConfigField("String", "APP_ID", "\"com.aistudio.syllabus.groups\"")
         buildConfigField("String", "TENANT_ID", "\"tenant_default\"")
         buildConfigField("int", "APP_VERSION_CODE", "1")
         buildConfigField("String", "APP_VERSION_NAME", "\"1.0\"")
@@ -56,52 +56,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
-    }
-    flavorDimensions += "exam"
-
-    productFlavors {
-        create("appsc") {
-            dimension = "exam"
-            applicationId = "com.aistudio.syllabus.appsc"
-            resValue("string", "app_name", "APPSC Group 2")
-            buildConfigField("String", "TENANT_ID", "\"appsc-group2\"")
-            buildConfigField("String", "APP_ID", "\"com.example.appscgroup2\"")
-        }
-        create("police") {
-            dimension = "exam"
-            applicationId = "com.aistudio.syllabus.police"
-            resValue("string", "app_name", "AP Police SI")
-            buildConfigField("String", "TENANT_ID", "\"ap-police\"")
-            buildConfigField("String", "APP_ID", "\"com.example.appolice\"")
-        }
-        create("dsc") {
-            dimension = "exam"
-            applicationId = "com.aistudio.syllabus.dsc"
-            resValue("string", "app_name", "AP DSC Teacher")
-            buildConfigField("String", "TENANT_ID", "\"ap-dsc\"")
-            buildConfigField("String", "APP_ID", "\"com.example.apdsc\"")
-        }
-        create("panchayat") {
-            dimension = "exam"
-            applicationId = "com.aistudio.syllabus.panchayat"
-            resValue("string", "app_name", "Panchayat Sec")
-            buildConfigField("String", "TENANT_ID", "\"panchayat-sec\"")
-            buildConfigField("String", "APP_ID", "\"com.example.panchayatsec\"")
-        }
-        create("rrb") {
-            dimension = "exam"
-            applicationId = "com.aistudio.syllabus.rrb"
-            resValue("string", "app_name", "RRB Railway")
-            buildConfigField("String", "TENANT_ID", "\"rrb-ntpc\"")
-            buildConfigField("String", "APP_ID", "\"com.example.rrbntpc\"")
-        }
-        create("ssc") {
-            dimension = "exam"
-            applicationId = "com.aistudio.syllabus.ssc"
-            resValue("string", "app_name", "SSC CGL Exam")
-            buildConfigField("String", "TENANT_ID", "\"ssc-cgl\"")
-            buildConfigField("String", "APP_ID", "\"com.example.ssccgl\"")
         }
     }
 

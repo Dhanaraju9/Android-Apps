@@ -1518,7 +1518,10 @@ private fun FullQuestionPaletteCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                itemsIndexed(questions) { index, question ->
+                itemsIndexed(
+                    items = questions,
+                    key = { index, question -> "${question.id}_$index" }
+                ) { index, question ->
                     val isCurrent = index == currentIndex
                     val isAnswered = userAnswers.containsKey(question.id) && userAnswers[question.id]?.isNotBlank() == true
                     val isMarked = markedForReview.contains(question.id)

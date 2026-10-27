@@ -30,8 +30,7 @@ object AdminSessionManager {
     private const val KEY_CUSTOM_REVIEWER_HASH = "key_custom_reviewer_hash"
 
     val ALLOWED_ADMIN_EMAILS = listOf(
-        "sobhadhanaraju0@gmail.com",
-        "sobhadhanaraju1@gmail.com"
+        "sobhadhanaraju0@gmail.com"
     )
 
     val ALLOWED_ADMIN_PHONES = listOf(

@@ -353,12 +353,21 @@ fun Modifier.premiumEntranceAndExit(
         return@composed this
     }
 
-    var isEntered by remember(triggerKey) { mutableStateOf(false) }
+    val entryCacheKey = remember(spec.target, index, triggerKey) {
+        "${spec.target.name}_${index}_${triggerKey.hashCode()}"
+    }
+    var isEntered by remember(entryCacheKey) {
+        mutableStateOf(PremiumEntranceCache.hasEntered(entryCacheKey))
+    }
 
-    LaunchedEffect(triggerKey, visible, spec.staggerDelayMs, spec.startDelayMs, spec.maxStaggerItems) {
+    LaunchedEffect(entryCacheKey, visible, spec.staggerDelayMs, spec.startDelayMs, spec.maxStaggerItems) {
         if (!visible) {
             // Exit immediately without stagger delay
             isEntered = false
+            return@LaunchedEffect
+        }
+        if (PremiumEntranceCache.hasEntered(entryCacheKey)) {
+            isEntered = true
             return@LaunchedEffect
         }
         isEntered = false
@@ -368,6 +377,7 @@ fun Modifier.premiumEntranceAndExit(
         if (totalDelay > 0L) {
             delay(totalDelay)
         }
+        PremiumEntranceCache.markEntered(entryCacheKey)
         isEntered = true
     }
 
@@ -401,6 +411,18 @@ fun Modifier.premiumEntranceAndExit(
 
     this
         .graphicsLayer {
+            if (isEnteringOrVisible && mainProgress >= 0.995f && alphaProgress >= 0.995f) {
+                alpha = 1f
+                translationX = 0f
+                translationY = 0f
+                scaleX = 1f
+                scaleY = 1f
+                rotationX = 0f
+                rotationY = 0f
+                rotationZ = 0f
+                return@graphicsLayer
+            }
+
             val enterDistPx = spec.translationDistanceDp.dp.toPx()
             val exitDistPx = spec.exitTranslationDistanceDp.dp.toPx()
             val activeDistPx = if (isEnteringOrVisible) enterDistPx else exitDistPx
@@ -923,17 +945,39 @@ fun Modifier.premiumHeroExpand(
             screenKey = screenKey
         )
         .graphicsLayer {
-            // Subtle hero expansion elevation & scale breathing when expanded
+            // Subtle transient scale pulse only while actively transitioning (0 < expandProgress < 1),
+            // settling back to exact 1.0f so card borders and Telugu text never clip or blur.
+            val transitionPulse = 4f * expandProgress * (1f - expandProgress)
             val heroScaleBoost = if (spec.entranceType == EntranceAnimationType.HERO_EXPAND ||
                 spec.interactionType == CardInteractionAnimationType.HERO_EXPAND
             ) {
-                0.012f * expandProgress
+                0.008f * transitionPulse
             } else {
-                0.004f * expandProgress
+                0.003f * transitionPulse
             }
-            scaleX *= (1f + heroScaleBoost)
-            scaleY *= (1f + heroScaleBoost)
+            scaleX = 1f + heroScaleBoost
+            scaleY = 1f + heroScaleBoost
         }
+}
+
+private object PremiumEntranceCache {
+    private const val MAX_ENTRIES = 512
+    private val enteredKeys = LinkedHashSet<String>()
+
+    @Synchronized
+    fun hasEntered(key: String): Boolean = enteredKeys.contains(key)
+
+    @Synchronized
+    fun markEntered(key: String) {
+        if (enteredKeys.size >= MAX_ENTRIES) {
+            val first = enteredKeys.iterator()
+            if (first.hasNext()) {
+                first.next()
+                first.remove()
+            }
+        }
+        enteredKeys.add(key)
+    }
 }
 
 /**

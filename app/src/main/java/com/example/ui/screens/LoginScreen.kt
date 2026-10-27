@@ -2373,6 +2373,19 @@ fun OtpVerificationContent(
                             Color(0xFFFBBF24)  // Box 6: Gold
                         )
 
+                        val focusRequesters = remember { List(6) { FocusRequester() } }
+                        var hasAutoVerified by remember { mutableStateOf(false) }
+
+                        LaunchedEffect(otpValues.toList()) {
+                            val entered = otpValues.joinToString("")
+                            if (entered.length == 6 && !hasAutoVerified && !isVerifyingOtp) {
+                                hasAutoVerified = true
+                                onVerifyOtp()
+                            } else if (entered.length < 6) {
+                                hasAutoVerified = false
+                            }
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
@@ -2402,6 +2415,11 @@ fun OtpVerificationContent(
                                                     }
                                                 } else if (clean.isNotEmpty()) {
                                                     otpValues[i] = clean.last().toString()
+                                                    if (i < 5) {
+                                                        try {
+                                                            focusRequesters[i + 1].requestFocus()
+                                                        } catch (_: Exception) {}
+                                                    }
                                                 } else {
                                                     otpValues[i] = ""
                                                 }
@@ -2414,7 +2432,27 @@ fun OtpVerificationContent(
                                             ),
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                             singleLine = true,
-                                            cursorBrush = SolidColor(boxColor)
+                                            cursorBrush = SolidColor(boxColor),
+                                            modifier = Modifier
+                                                .focusRequester(focusRequesters[i])
+                                                .onKeyEvent { keyEvent ->
+                                                    if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Backspace) {
+                                                        if (otpValues[i].isEmpty() && i > 0) {
+                                                            otpValues[i - 1] = ""
+                                                            try {
+                                                                focusRequesters[i - 1].requestFocus()
+                                                            } catch (_: Exception) {}
+                                                            true
+                                                        } else if (otpValues[i].isNotEmpty()) {
+                                                            otpValues[i] = ""
+                                                            true
+                                                        } else {
+                                                            false
+                                                        }
+                                                    } else {
+                                                        false
+                                                    }
+                                                }
                                         )
                                     }
                                 }

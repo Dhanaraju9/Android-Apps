@@ -431,28 +431,8 @@ fun PremiumAchievementResultOverlay(
 
     val haptic = LocalHapticFeedback.current
     var hasTriggeredHaptic by remember { mutableStateOf(false) }
-
-    val transition = rememberInfiniteTransition(label = "achievement_ambient")
-    val glowPulse by transition.animateFloat(
-        initialValue = 0.28f,
-        targetValue = 0.52f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glowPulse"
-    )
-
-    // Gentle upward drifting stardust
-    val stardustDrift by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(4500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "stardustDrift"
-    )
+    var isOverlayActive by remember(scorePercentage) { mutableStateOf(true) }
+    val celebrationProgress = remember(scorePercentage) { Animatable(0f) }
 
     val stardustParticles = remember {
         val rand = Random(777)
@@ -481,7 +461,23 @@ fun PremiumAchievementResultOverlay(
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             } catch (_: Exception) {}
         }
+        celebrationProgress.snapTo(0f)
+        celebrationProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 3200, easing = LinearEasing)
+        )
+        isOverlayActive = false
     }
+
+    if (!isOverlayActive) return
+
+    val p = celebrationProgress.value
+    val envelopeAlpha = when {
+        p < 0.15f -> (p / 0.15f).coerceIn(0f, 1f)
+        p > 0.72f -> ((1f - p) / 0.28f).coerceIn(0f, 1f)
+        else -> 1f
+    }
+    val glowPulse = (0.30f + 0.20f * sin(p * PI.toFloat() * 2f)) * envelopeAlpha
 
     Box(
         modifier = modifier,
@@ -491,16 +487,17 @@ fun PremiumAchievementResultOverlay(
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
+            if (w <= 1f || h <= 1f) return@Canvas
 
             // Soft radial ambient light behind the top card area
             val glowCenter = Offset(w / 2f, h * 0.22f)
-            val glowRadius = w * 0.55f
+            val glowRadius = (w * 0.55f).coerceAtLeast(1f)
 
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFF59E0B).copy(alpha = glowPulse * 0.35f),
-                        Color(0xFF10B981).copy(alpha = glowPulse * 0.20f),
+                        Color(0xFFF59E0B).copy(alpha = (glowPulse * 0.35f).coerceIn(0f, 1f)),
+                        Color(0xFF10B981).copy(alpha = (glowPulse * 0.20f).coerceIn(0f, 1f)),
                         Color.Transparent
                     ),
                     center = glowCenter,
@@ -512,11 +509,11 @@ fun PremiumAchievementResultOverlay(
 
             // Delicate floating stardust specks
             stardustParticles.forEach { s ->
-                val progress = (stardustDrift * s.speed) % 1f
+                val progress = (p * s.speed) % 1f
                 val pX = w * s.xRatio + sin(progress * 2f * PI.toFloat()) * 12.dp.toPx()
                 val pY = (h * s.yRatio) - (progress * 110.dp.toPx())
 
-                val twinkle = (sin(progress * PI.toFloat()) * s.maxAlpha).coerceIn(0f, 1f)
+                val twinkle = (sin(progress * PI.toFloat()) * s.maxAlpha * envelopeAlpha).coerceIn(0f, 1f)
 
                 drawMicroSparkle(
                     center = Offset(pX, pY),

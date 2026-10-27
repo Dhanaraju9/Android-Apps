@@ -71,7 +71,7 @@ data class RemoteTenantConfiguration(
     val maintenanceMessage: String = "",
     val featureFlags: Map<String, Boolean> = emptyMap(),
     val razorpayKeyId: String = "",
-    val supportEmail: String = "Sobhadhanaraju1@gmail.com",
+    val supportEmail: String = "sobhadhanaraju0@gmail.com",
     val supportPhone: String = "+91 94935 12768",
     val whatsappNumber: String = "+91 94935 12768",
     val telegramLink: String = "https://t.me/DHANARAJU0",

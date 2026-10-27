@@ -27,7 +27,7 @@ data class AppBranding(
     val buttonCornerRadiusDp: Int = 10,
     val chipCornerRadiusDp: Int = 16,
     val fontPreset: String = "Modern",
-    val supportEmail: String = "Sobhadhanaraju1@gmail.com",
+    val supportEmail: String = "sobhadhanaraju0@gmail.com",
     val supportPhone: String = "+91 94935 12768",
     val whatsappNumber: String = "+91 94935 12768",
     val whatsappLink: String = "https://wa.me/919493512768",

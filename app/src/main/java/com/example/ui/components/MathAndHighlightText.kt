@@ -18,8 +18,13 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -112,22 +117,93 @@ private fun RenderFlowMathRow(
     isHighlightActive: Boolean,
     highlightConfig: QuestionHighlightConfig
 ) {
-    // We use a custom flow layout or flexible Row wrapping for math elements
-    OptFlowRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        elements.forEach { element ->
-            RenderMathElement(
-                element = element,
-                fontSize = fontSize,
-                fontFamily = fontFamily,
-                fontWeight = fontWeight,
-                color = color,
-                isHighlightActive = isHighlightActive,
-                highlightConfig = highlightConfig
-            )
+    val isDark = isSystemInDarkTheme()
+    val allTextSegments = remember(elements) {
+        elements.isNotEmpty() && elements.all { it is MathElement.TextSegment }
+    }
+
+    if (allTextSegments) {
+        val parsedFontWeight = when (highlightConfig.fontWeightName.lowercase()) {
+            "bold" -> FontWeight.Bold
+            "medium" -> FontWeight.Medium
+            "normal" -> FontWeight.Normal
+            else -> FontWeight.SemiBold
+        }
+
+        val annotatedText = remember(elements, isHighlightActive, highlightConfig, isDark, fontWeight, parsedFontWeight) {
+            buildAnnotatedString {
+                elements.forEach { element ->
+                    val seg = element as MathElement.TextSegment
+                    if (seg.isHighlighted && isHighlightActive) {
+                        val preset = seg.highlightType?.let { HighlightPreset.fromName(it) }
+                        val chipBg = if (preset != null) {
+                            if (isDark) {
+                                Color(preset.bgColorHex).copy(alpha = 0.25f).compositeOver(Color(0xFF1E293B))
+                            } else {
+                                Color(preset.bgColorHex)
+                            }
+                        } else {
+                            Color(highlightConfig.bgColorHex)
+                        }
+                        val chipText = if (preset != null) {
+                            if (isDark) {
+                                Color(preset.bgColorHex)
+                            } else {
+                                Color(preset.textColorHex)
+                            }
+                        } else {
+                            Color(highlightConfig.textColorHex)
+                        }
+                        withStyle(
+                            SpanStyle(
+                                color = chipText,
+                                background = chipBg,
+                                fontWeight = parsedFontWeight,
+                                letterSpacing = 0.sp
+                            )
+                        ) {
+                            append(seg.text)
+                        }
+                    } else {
+                        append(seg.text)
+                    }
+                }
+            }
+        }
+
+        Text(
+            text = annotatedText,
+            fontSize = fontSize,
+            fontFamily = fontFamily,
+            fontWeight = fontWeight,
+            color = color,
+            lineHeight = (fontSize.value * 1.50f).sp,
+            letterSpacing = 0.sp,
+            style = TextStyle(
+                platformStyle = PlatformTextStyle(includeFontPadding = true)
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 1.dp)
+        )
+    } else {
+        // Flow layout for paragraphs containing inline math structures (fractions, powers, roots)
+        OptFlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            elements.forEach { element ->
+                RenderMathElement(
+                    element = element,
+                    fontSize = fontSize,
+                    fontFamily = fontFamily,
+                    fontWeight = fontWeight,
+                    color = color,
+                    isHighlightActive = isHighlightActive,
+                    highlightConfig = highlightConfig
+                )
+            }
         }
     }
 }
@@ -186,6 +262,11 @@ private fun RenderMathElement(
                     fontFamily = fontFamily,
                     fontWeight = fontWeight,
                     color = color,
+                    lineHeight = (fontSize.value * 1.50f).sp,
+                    letterSpacing = 0.sp,
+                    style = TextStyle(
+                        platformStyle = PlatformTextStyle(includeFontPadding = true)
+                    ),
                     modifier = Modifier.padding(vertical = 1.dp)
                 )
             }
@@ -305,7 +386,7 @@ fun MathFractionView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .width(IntrinsicSize.Min)
+                .width(IntrinsicSize.Max)
                 .padding(horizontal = 4.dp, vertical = 1.5.dp)
         ) {
             RenderMathElement(
@@ -320,8 +401,8 @@ fun MathFractionView(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(vertical = 1.dp)
                     .height(1.5.dp)
-                    .padding(vertical = 0.5.dp)
                     .background(barColor.copy(alpha = 0.9f), RoundedCornerShape(1.dp))
             )
             RenderMathElement(
@@ -520,6 +601,11 @@ fun HighlightChip(
             fontFamily = fontFamily,
             fontWeight = parsedFontWeight,
             color = chipText,
+            lineHeight = (fontSize.value * 1.45f).sp,
+            letterSpacing = 0.sp,
+            style = TextStyle(
+                platformStyle = PlatformTextStyle(includeFontPadding = true)
+            ),
             modifier = Modifier.padding(
                 horizontal = config.horizontalPaddingDp.dp,
                 vertical = config.verticalPaddingDp.dp

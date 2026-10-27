@@ -35,14 +35,18 @@ fun RichVisualExplanationView(
 ) {
     val lowerText = remember(explanationText) { explanationText.lowercase() }
 
-    val hasTriangle = lowerText.contains("triangle") || lowerText.contains("equilateral") || lowerText.contains("hypotenuse") || lowerText.contains("area")
-    val hasCircle = lowerText.contains("circle") || lowerText.contains("radius") || lowerText.contains("diameter")
-    val hasRectangle = lowerText.contains("rectangle") || lowerText.contains("square") || lowerText.contains("length")
+    val hasTriangle = lowerText.contains("equilateral triangle") || lowerText.contains("right triangle") || lowerText.contains("hypotenuse") || (lowerText.contains("triangle") && (lowerText.contains("altitude") || lowerText.contains("base") || lowerText.contains("perimeter")))
+    val hasCircle = (lowerText.contains("circle") && (lowerText.contains("radius") || lowerText.contains("diameter") || lowerText.contains("circumference") || lowerText.contains("chord")))
+    val hasRectangle = (lowerText.contains("rectangle") && (lowerText.contains("breadth") || lowerText.contains("perimeter") || lowerText.contains("diagonal")))
 
-    val isNumberSeries = lowerText.contains("series") || lowerText.contains("difference") || lowerText.contains("next") || lowerText.contains("sequence") || lowerText.contains("2, 3, 6") || lowerText.contains("+")
-    val isDirection = lowerText.contains("north") || lowerText.contains("south") || lowerText.contains("east") || lowerText.contains("west") || lowerText.contains("direction")
-    val isBloodRelation = lowerText.contains("father") || lowerText.contains("mother") || lowerText.contains("brother") || lowerText.contains("blood") || lowerText.contains("relation")
-    val isCoding = lowerText.contains("code") || lowerText.contains("coded") || lowerText.contains("language")
+    val isNumberSeries = lowerText.contains("number series") || lowerText.contains("missing number") || lowerText.contains("2, 3, 6, 11") || (lowerText.contains("series") && lowerText.contains("difference between consecutive"))
+    val isDirection = lowerText.contains("direction sense") || lowerText.contains("walks north") || lowerText.contains("walks south") || lowerText.contains("walks east") || lowerText.contains("walks west") || lowerText.contains("pythagoras theorem")
+    val isBloodRelation = lowerText.contains("blood relation") || lowerText.contains("family tree") || lowerText.contains("paternal") || lowerText.contains("maternal")
+    val isCoding = lowerText.contains("coding-decoding") || lowerText.contains("coded as") || lowerText.contains("in a certain code")
+
+    val stepHighlights = remember(highlights) {
+        highlights.map { it.copy(startIndex = -1, endIndex = -1) }
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -128,7 +132,7 @@ fun RichVisualExplanationView(
                         Box(modifier = Modifier.weight(1f)) {
                             MathAndHighlightText(
                                 text = stepText,
-                                highlights = highlights,
+                                highlights = stepHighlights,
                                 fontSize = (fontSize.value * 0.95f).sp,
                                 fontFamily = fontFamily,
                                 color = Color(0xFF1E3A8A)
@@ -479,8 +483,18 @@ fun CodingDecodingDiagramView() {
 
 private fun extractSimpleSteps(text: String): List<String> {
     if (text.isBlank()) return listOf("Analyze the given pattern and apply step-by-step logic.")
-    val rawSentences = text.split(Regex("[\\n\\.\\;]+"))
-        .map { it.trim() }
+    val dotPlaceholder = "\u0000"
+    val protectedText = text
+        .replace("క్రీ.శ.", "క్రీ${dotPlaceholder}శ${dotPlaceholder}")
+        .replace("క్రీ.పూ.", "క్రీ${dotPlaceholder}పూ${dotPlaceholder}")
+        .replace("డా.", "డా${dotPlaceholder}")
+        .replace("శ్రీ.", "శ్రీ${dotPlaceholder}")
+        .replace("బి.ఆర్.", "బి${dotPlaceholder}ఆర్${dotPlaceholder}")
+        .replace(Regex("\\b(Dr|Mr|Mrs|Ms|St|Art|No|Vol|Fig|vs|etc)\\."), "$1$dotPlaceholder")
+        .replace(Regex("(?<=\\b[A-Za-z])\\."), dotPlaceholder)
+
+    val rawSentences = protectedText.split(Regex("(?:\\r?\\n)+|;\\s*|\\.(?=\\s+|$)"))
+        .map { it.replace(dotPlaceholder, ".").trim() }
         .filter { it.isNotBlank() && it.length > 5 }
 
     if (rawSentences.isEmpty()) {

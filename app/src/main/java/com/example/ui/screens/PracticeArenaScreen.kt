@@ -339,22 +339,23 @@ fun PracticeArenaScreen(
         if (isTimerRunning) {
             val localStart = System.currentTimeMillis() - (secondsDelta * 1000)
             while (isTimerRunning) {
-                delay(500L) // update frequently for smooth UI
-                secondsDelta = (System.currentTimeMillis() - localStart) / 1000
+                delay(1000L)
+                val nextDelta = (System.currentTimeMillis() - localStart) / 1000
+                if (nextDelta != secondsDelta) {
+                    secondsDelta = nextDelta
+                }
             }
         }
     }
 
-    val currentTotalElapsed = (accumulatedElapsedTime + secondsDelta).coerceAtLeast(0L)
-    val remainingSeconds = (totalTimeSeconds - currentTotalElapsed).coerceAtLeast(0L).toInt()
-
     // Autosave session on changes
     LaunchedEffect(currentIndex, userAnswers.size, markedForReviewIds, activeQuestions) {
         if (!isMockTest && activeQuestions.isNotEmpty()) {
+            val currentElapsed = (accumulatedElapsedTime + secondsDelta).coerceAtLeast(0L)
             val updatedSession = PracticeSession(
                 sessionId = practiceSessionId,
                 startTimestamp = sessionStartTimestamp,
-                elapsedTime = currentTotalElapsed,
+                elapsedTime = currentElapsed,
                 questionIdsOrder = activeQuestions.map { it.id },
                 currentQuestionIndex = currentIndex,
                 userAnswers = userAnswers.toMap(),
@@ -389,13 +390,14 @@ fun PracticeArenaScreen(
                 }
             }
         }
-        val elapsedSeconds = currentTotalElapsed.coerceAtLeast(1L).toInt()
+        val currentElapsed = (accumulatedElapsedTime + secondsDelta).coerceAtLeast(0L)
+        val elapsedSeconds = currentElapsed.coerceAtLeast(1L).toInt()
 
         if (!isMockTest) {
             val completedSession = PracticeSession(
                 sessionId = practiceSessionId,
                 startTimestamp = sessionStartTimestamp,
-                elapsedTime = currentTotalElapsed,
+                elapsedTime = currentElapsed,
                 questionIdsOrder = activeQuestions.map { it.id },
                 currentQuestionIndex = currentIndex,
                 userAnswers = userAnswers.toMap(),
@@ -415,11 +417,17 @@ fun PracticeArenaScreen(
         )
     }
 
-    LaunchedEffect(remainingSeconds) {
-        if (remainingSeconds <= 0 && isTimerRunning) {
-            isTimerRunning = false
-            Toast.makeText(context, "Time is up! Submitting...", Toast.LENGTH_SHORT).show()
-            triggerSubmit()
+    LaunchedEffect(isTimerRunning, totalTimeSeconds, accumulatedElapsedTime) {
+        while (isTimerRunning) {
+            val currentElapsed = (accumulatedElapsedTime + secondsDelta).coerceAtLeast(0L)
+            val rem = (totalTimeSeconds - currentElapsed).coerceAtLeast(0L).toInt()
+            if (rem <= 0) {
+                isTimerRunning = false
+                Toast.makeText(context, "Time is up! Submitting...", Toast.LENGTH_SHORT).show()
+                triggerSubmit()
+                break
+            }
+            delay(1000L)
         }
     }
 
@@ -614,6 +622,8 @@ fun PracticeArenaScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
+                            val currentTotalElapsed = (accumulatedElapsedTime + secondsDelta).coerceAtLeast(0L)
+                            val remainingSeconds = (totalTimeSeconds - currentTotalElapsed).coerceAtLeast(0L).toInt()
                             // Timer Pill (Interactive Play/Pause on Tap)
                             Surface(
                                 shape = RoundedCornerShape(20.dp),

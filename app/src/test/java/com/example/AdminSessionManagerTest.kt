@@ -16,7 +16,7 @@ class AdminSessionManagerTest {
     @Test
     fun testAdminEmailValidation() {
         assertTrue(AdminSessionManager.validateEmail("sobhadhanaraju0@gmail.com"))
-        assertTrue(AdminSessionManager.validateEmail("sobhadhanaraju1@gmail.com"))
+        assertTrue(AdminSessionManager.validateEmail("sobhadhanaraju0@gmail.com"))
         assertTrue(AdminSessionManager.validateEmail("google.reviewer@appscprep.internal"))
         assertFalse(AdminSessionManager.validateEmail("unauthorized@example.com"))
         assertFalse(AdminSessionManager.validateEmail(""))
@@ -25,7 +25,7 @@ class AdminSessionManagerTest {
 
     @Test
     fun testAdminOtpLifecycle_realOtp() {
-        val otp = AdminSessionManager.generateOtp(email = "sobhadhanaraju1@gmail.com", isReviewer = false)
+        val otp = AdminSessionManager.generateOtp(email = "sobhadhanaraju0@gmail.com", isReviewer = false)
         assertNotNull(otp)
         assertEquals(6, otp.length)
         assertTrue(otp.all { it.isDigit() })
@@ -43,7 +43,7 @@ class AdminSessionManagerTest {
     @Test
     fun testTemporaryTestOtp_inDevEnvironment() {
         // Generate normal OTP
-        AdminSessionManager.generateOtp(email = "sobhadhanaraju1@gmail.com", isReviewer = false)
+        AdminSessionManager.generateOtp(email = "sobhadhanaraju0@gmail.com", isReviewer = false)
 
         // Test OTP "123456" must verify successfully in dev environment
         if (AdminSessionManager.isDevEnvironment) {
@@ -62,7 +62,7 @@ class AdminSessionManagerTest {
 
     @Test
     fun testMaxAttemptsLockout() {
-        AdminSessionManager.generateOtp(email = "sobhadhanaraju1@gmail.com", isReviewer = false)
+        AdminSessionManager.generateOtp(email = "sobhadhanaraju0@gmail.com", isReviewer = false)
 
         // 5 wrong attempts
         repeat(5) {

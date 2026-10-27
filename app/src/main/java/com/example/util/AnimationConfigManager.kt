@@ -603,7 +603,7 @@ object AnimationConfigManager {
                 selectedAppIds = selectedIds,
                 versionNumber = root.optInt("versionNumber", 1),
                 updatedAt = root.optLong("updatedAt", System.currentTimeMillis()),
-                updatedBy = root.optString("updatedBy", "sobhadhanaraju1@gmail.com"),
+                updatedBy = root.optString("updatedBy", "sobhadhanaraju0@gmail.com"),
                 notes = root.optString("notes", "")
             )
         } catch (e: Exception) {

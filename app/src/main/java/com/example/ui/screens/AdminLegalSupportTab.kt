@@ -1532,7 +1532,7 @@ private fun AdminContactChannelsEditor() {
                     value = supportEmail,
                     onValueChange = { supportEmail = it },
                     label = { Text("Official Support Email Address") },
-                    placeholder = { Text("Sobhadhanaraju1@gmail.com") },
+                    placeholder = { Text("sobhadhanaraju0@gmail.com") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -1663,7 +1663,7 @@ private fun AdminContactChannelsEditor() {
             Button(
                 onClick = {
                     val updated = currentConfig.copy(
-                        supportEmail = supportEmail.trim().ifBlank { "Sobhadhanaraju1@gmail.com" },
+                        supportEmail = supportEmail.trim().ifBlank { "sobhadhanaraju0@gmail.com" },
                         isEmailSupportEnabled = isEmailEnabled,
                         whatsappNumber = whatsappNumber.trim().ifBlank { "+91 94935 12768" },
                         whatsappLink = whatsappLink.trim().ifBlank { "https://wa.me/919493512768" },

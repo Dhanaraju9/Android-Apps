@@ -75,7 +75,7 @@ Represents an individual candidate's standing within a specific exam, time perio
 Cumulative lifetime performance records linked 1:1 with candidate user IDs and active exams.
 
 - **Document ID Structure**: `${examId}_${userId}`
-  - Example: `appsc-group2_sobhadhanaraju1@gmail_com`
+  - Example: `appsc-group2_sobhadhanaraju0@gmail_com`
 - **Fields**:
   | Field | Type | Description |
   |---|---|---|

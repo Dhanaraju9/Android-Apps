@@ -523,7 +523,7 @@ data class AnimationEngineConfig(
     val selectedAppIds: List<String> = emptyList(),
     val versionNumber: Int = 1,
     val updatedAt: Long = System.currentTimeMillis(),
-    val updatedBy: String = "sobhadhanaraju1@gmail.com",
+    val updatedBy: String = "sobhadhanaraju0@gmail.com",
     val notes: String = "Default Cascade Accordion Pro configuration"
 )
 

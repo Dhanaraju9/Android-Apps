@@ -49,6 +49,7 @@ import com.example.model.*
 import com.example.util.GamificationManager
 import com.example.util.OfflineSyncManager
 import com.example.util.PreviousYearPaperStore
+import com.example.ui.theme.LuxuriousGold
 
 fun getContentScaleByName(scaleType: String?): ContentScale {
     return when (scaleType?.lowercase()) {
@@ -149,18 +150,40 @@ fun LeftNavigationDrawerContent(
                         } else {
                             item
                         }
-                        ExactDrawerCardItem(
-                            item = resolvedItem,
-                            isDarkMode = isDarkMode,
-                            customTitle = if (userProfile.isLoggedIn) userProfile.name else item.title,
-                            customSubtitle = if (userProfile.isLoggedIn) {
-                                if (isSubActive) "PRO Member • ${userProfile.email}" else userProfile.email
-                            } else item.subtitle,
-                            onClick = {
-                                onCloseDrawer()
-                                onNavigateToProfile()
-                            }
-                        )
+
+                        // Apply premium multi-colored theme for subbed users
+                        val premiumModifier = if (isSubActive) {
+                            Modifier.background(
+                                Brush.horizontalGradient(
+                                    listOf(
+                                        Color(0xFF10B981), // Emerald
+                                        Color(0xFF3B82F6), // Blue
+                                        Color(0xFFF43F5E), // Red
+                                        Color(0xFFF97316), // Orange
+                                        Color(0xFFA855F7), // Violet
+                                        Color(0xFF14B8A6)  // Teal
+                                    )
+                                ),
+                                RoundedCornerShape(item.cornerRadiusDp.dp)
+                            ).padding(1.5.dp) // Border thickness
+                        } else {
+                            Modifier
+                        }
+
+                        Box(modifier = premiumModifier) {
+                            ExactDrawerCardItem(
+                                item = resolvedItem,
+                                isDarkMode = isDarkMode,
+                                customTitle = if (userProfile.isLoggedIn) userProfile.name else item.title,
+                                customSubtitle = if (userProfile.isLoggedIn) {
+                                    if (isSubActive) "PRO Member • ${userProfile.email}" else userProfile.email
+                                } else item.subtitle,
+                                onClick = {
+                                    onCloseDrawer()
+                                    onNavigateToProfile()
+                                }
+                            )
+                        }
                     } else if (item.id == "syllabus_home") {
                         ExactDrawerCardItem(
                             item = item,
@@ -452,10 +475,19 @@ private fun ExactDrawerCardItem(
         Color(item.iconBoxBgColorHex)
     }
 
+    // Manual luminance calculation
+    val luminance = (containerColor.red * 0.2126f + containerColor.green * 0.7152f + containerColor.blue * 0.0722f)
+    val isLightBackground = luminance > 0.5f
+
+    // Premium colors for the profile text
+    val isProfileItem = item.id == "my_profile"
+    val premiumTitleColor = if (isLightBackground) Color(0xFF047857) else Color(0xFF10B981) // Emerald
+    val premiumSubtitleColor = if (isLightBackground) Color(0xFF1D4ED8) else Color(0xFF3B82F6) // Blue
+
     val titleColor = item.titleTextColorHex?.let { Color(it) }
-        ?: if (isDarkMode) Color.White else Color(0xFF0F172A)
+        ?: (if (isProfileItem) LuxuriousGold else (if (isLightBackground) Color(0xFF0F172A) else Color.White))
     val subtitleColor = item.subtitleTextColorHex?.let { Color(it) }
-        ?: if (isDarkMode) Color(0xFF94A3B8) else Color(0xFF64748B)
+        ?: (if (isProfileItem) premiumSubtitleColor else (if (isLightBackground) Color(0xFF64748B) else Color(0xFF94A3B8)))
 
     val cardShape = RoundedCornerShape(item.cornerRadiusDp.dp)
     val gradientBrush = if (item.useGradient) {

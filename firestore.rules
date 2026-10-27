@@ -13,7 +13,7 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email in ['admin@appscprep.com', 'sobhadhanaraju1@gmail.com', 'sobhadhanaraju0@gmail.com'] ||
+        request.auth.token.email in ['admin@appscprep.com', 'sobhadhanaraju0@gmail.com'] ||
         request.auth.token.phone_number in ['+919493512768'] ||
         request.auth.token.admin == true
       );

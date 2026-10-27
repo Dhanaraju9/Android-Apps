@@ -19,9 +19,9 @@ data class AppTenantModel(
     val allowedLanguages: List<String> = listOf("English"),
     val country: String = "India",
     val region: String = "", // State/Region
-    val contactEmail: String = "Sobhadhanaraju1@gmail.com",
+    val contactEmail: String = "sobhadhanaraju0@gmail.com",
     val supportPhone: String = "+91 94935 12768",
-    val supportEmail: String = "Sobhadhanaraju1@gmail.com",
+    val supportEmail: String = "sobhadhanaraju0@gmail.com",
     val whatsappNumber: String = "+91 94935 12768",
     val whatsappLink: String = "https://wa.me/919493512768",
     val telegramId: String = "@DHANARAJU0",

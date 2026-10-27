@@ -429,7 +429,7 @@ object RazorpayComplianceManager {
               <h2>3. Account &amp; Data Deletion</h2>
               <p>You may delete your account and personal records at any time from the in-app Legal &amp; Support Center or by emailing <strong>sobhadhanaraju0@gmail.com</strong>. Requests are processed within 7 business days.</p>
               <h2>4. Grievance Officer</h2>
-              <p><strong>Name:</strong> $merchantName<br/><strong>Email:</strong> sobhadhanaraju0@gmail.com / Sobhadhanaraju1@gmail.com<br/><strong>Region:</strong> Andhra Pradesh, India</p>
+              <p><strong>Name:</strong> $merchantName<br/><strong>Email:</strong> sobhadhanaraju0@gmail.com<br/><strong>Region:</strong> Andhra Pradesh, India</p>
             </div>
           </main>
           <footer><div class="container">&copy; 2025–2026 $merchantName. All Rights Reserved.</div></footer>
@@ -572,7 +572,7 @@ object RazorpayComplianceManager {
                 <li><strong>Razorpay Merchant ID (MID):</strong> $mid</li>
                 <li><strong>Razorpay Account ID:</strong> $accId</li>
                 <li><strong>Primary Support Email:</strong> sobhadhanaraju0@gmail.com</li>
-                <li><strong>Escalation / Admin Email:</strong> Sobhadhanaraju1@gmail.com</li>
+                <li><strong>Escalation / Admin Email:</strong> sobhadhanaraju0@gmail.com</li>
                 <li><strong>Operating Address:</strong> SOBHA DHANARAJU, APPSC Group 2 Exam Prep Pro Digital Division, Visakhapatnam / Vijayawada, Andhra Pradesh – 530001, India</li>
                 <li><strong>Support Hours:</strong> Monday to Saturday, 9:00 AM – 7:00 PM IST (Response SLA: Within 24 Hours)</li>
               </ul>

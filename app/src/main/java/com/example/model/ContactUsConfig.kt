@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
  */
 data class ContactUsConfig(
     // Contact Info (defaults match the pixel reference image)
-    val supportEmail: String = "Sobhadhanaraju1@gmail.com",
+    val supportEmail: String = "sobhadhanaraju0@gmail.com",
     val emailTitle: String = "Email Support",
     val emailSubtext: String = "Send us your questions or technical issues",
     val isEmailSupportEnabled: Boolean = true,

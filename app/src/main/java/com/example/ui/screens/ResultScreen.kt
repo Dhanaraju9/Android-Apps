@@ -104,11 +104,15 @@ fun ResultScreen(
 
     var selectedFilter by remember { mutableStateOf("All") }
 
-    val filteredQs = remember(questions, userAnswers, selectedFilter) {
-        questions.filter { q ->
+    val questionIndexMap = remember(questions) {
+        questions.mapIndexed { idx, q -> q.id to idx }.toMap()
+    }
+
+    val filteredQs = remember(questions, userAnswers, selectedFilter, questionIndexMap) {
+        questions.filterIndexed { idx, q ->
             val ans = userAnswers[q.id]
                 ?: userAnswers[q.questionText]
-                ?: userAnswers[questions.indexOf(q).toString()]
+                ?: userAnswers[idx.toString()]
             when (selectedFilter) {
                 "Mistakes" -> ans != null && !ans.equals(q.correctOption, ignoreCase = true)
                 "Skipped" -> ans == null
@@ -130,7 +134,7 @@ fun ResultScreen(
     ) {
         val isTablet = maxWidth >= 600.dp
 
-        // Champagne/Peach Hero Background
+        // Champagne/Peach Hero Background smoothly fading into screenBg without a hard horizontal seam
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,10 +143,9 @@ fun ResultScreen(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color(0xFFFFEFE6), // Soft peach cream
-                            Color(0xFFFFF8F0)  // Warm ivory background match
-                        ),
-                        startY = 0f,
-                        endY = Float.POSITIVE_INFINITY
+                            Color(0xFFFFF8F0), // Warm ivory transition
+                            screenBg           // Seamless blend into screen background
+                        )
                     )
                 )
         )
@@ -971,16 +974,20 @@ fun ResultScreen(
             }
 
             // Questions List
-            itemsIndexed(filteredQs) { index, question ->
+            itemsIndexed(
+                items = filteredQs,
+                key = { index, question -> "${question.id}_$index" }
+            ) { index, question ->
+                val origIdx = questionIndexMap[question.id] ?: index
                 val isBm = bookmarkedIds.contains(question.id)
                 val selectedOpt = userAnswers[question.id]
                     ?: userAnswers[question.questionText]
+                    ?: userAnswers[origIdx.toString()]
                     ?: userAnswers[index.toString()]
-                    ?: userAnswers[questions.indexOf(question).toString()]
 
                 QuestionSolutionCard(
                     question = question,
-                    index = questions.indexOf(question) + 1,
+                    index = origIdx + 1,
                     selectedOption = selectedOpt,
                     isBookmarked = isBm,
                     onToggleBookmark = { q ->
@@ -1148,7 +1155,12 @@ fun QuestionSolutionCard(
                     }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .padding(start = 8.dp)
+                ) {
                     IconButton(
                         onClick = {
                             onToggleBookmark(question)
@@ -1303,6 +1315,7 @@ fun QuestionSolutionCard(
                     shape = RoundedCornerShape(12.dp),
                     color = Color(0xFFD8FDCC), // Soft light mint / pale Jade Green from reference image
                     border = BorderStroke(2.dp, Color(0xFF025935)), // Deep Jade Green border from reference image
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(

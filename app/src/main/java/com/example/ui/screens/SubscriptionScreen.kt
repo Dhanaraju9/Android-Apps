@@ -1704,7 +1704,7 @@ private fun LegalPolicyModal(
             If a payment was debited but the transaction failed or duplicate charges occurred due to network interruption, refunds are processed automatically to the original payment source (UPI/Bank/Card) within 5 to 7 business days.
             
             4. Support Inquiries:
-            For refund queries, reach out to official candidate support at Sobhadhanaraju1@gmail.com or WhatsApp +91 94935 12768 with your verified Transaction ID.
+            For refund queries, reach out to official candidate support at sobhadhanaraju0@gmail.com or WhatsApp +91 94935 12768 with your verified Transaction ID.
         """.trimIndent()
     }
 
