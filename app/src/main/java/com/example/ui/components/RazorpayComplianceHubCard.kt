@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.animation.AnimatedVisibility
@@ -642,6 +643,7 @@ fun ComplianceHtmlPreviewDialog(
                 AndroidView(
                     factory = { ctx ->
                         WebView(ctx).apply {
+                            setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                             settings.javaScriptEnabled = false
                             settings.loadWithOverviewMode = true
                             settings.useWideViewPort = true
@@ -656,6 +658,17 @@ fun ComplianceHtmlPreviewDialog(
                                             activePage = matched
                                             return true
                                         }
+                                    }
+                                    return true
+                                }
+
+                                override fun onRenderProcessGone(
+                                    view: WebView?,
+                                    detail: RenderProcessGoneDetail?
+                                ): Boolean {
+                                    view?.let { webView ->
+                                        (webView.parent as? android.view.ViewGroup)?.removeView(webView)
+                                        webView.destroy()
                                     }
                                     return true
                                 }

@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -82,6 +83,17 @@ fun UserProfileScreen(
     val burgundyIconColor = Color(0xFF7A2030)   // Deep burgundy for icons
     val iconCircleBg = Color(0xFFF8E7EC)         // Soft rose cream icon container
     val goldBadgeColor = Color(0xFFD4AF37)       // Gold badge accent
+    val profileGradientBrush = remember {
+        Brush.horizontalGradient(
+            colors = listOf(
+                Color(0xFFE11D48), // Rose Red
+                Color(0xFF9333EA), // Royal Violet
+                Color(0xFF2563EB), // Electric Blue
+                Color(0xFF059669), // Emerald Green
+                Color(0xFFD97706)  // Gold
+            )
+        )
+    }
 
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { isVisible = true }
@@ -160,9 +172,11 @@ fun UserProfileScreen(
                 title = {
                     Text(
                         text = "Profile & Settings",
-                        fontWeight = FontWeight.Bold,
-                        color = burgundyTextPrimary,
-                        fontSize = 19.sp
+                        style = TextStyle(
+                            brush = profileGradientBrush,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 20.sp
+                        )
                     )
                 },
                 navigationIcon = {

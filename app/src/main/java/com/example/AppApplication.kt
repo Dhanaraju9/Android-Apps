@@ -38,6 +38,18 @@ class AppApplication : Application(), ImageLoaderFactory {
             Log.e("AppApplication", "FATAL UNCAUGHT EXCEPTION on thread ${thread.name}: ${throwable.message}", throwable)
         }
 
+        // Multiprocess WebView data directory safety initialization (Android 9+)
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                val processName = getProcessName()
+                if (packageName != processName) {
+                    android.webkit.WebView.setDataDirectorySuffix(processName)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("AppApplication", "WebView setDataDirectorySuffix note: ${e.message}")
+        }
+
         // 0. Ensure FirebaseApp is initialized synchronously before any component requests Firebase services
         try {
             if (FirebaseApp.getApps(this).isEmpty()) {

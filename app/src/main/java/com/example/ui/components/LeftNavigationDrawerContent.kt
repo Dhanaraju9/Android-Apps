@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -174,7 +175,7 @@ fun LeftNavigationDrawerContent(
                             ExactDrawerCardItem(
                                 item = resolvedItem,
                                 isDarkMode = isDarkMode,
-                                customTitle = if (userProfile.isLoggedIn) userProfile.name else item.title,
+                                customTitle = if (userProfile.isLoggedIn && userProfile.name.isNotBlank()) "Profile • ${userProfile.name}" else "Profile & Settings",
                                 customSubtitle = if (userProfile.isLoggedIn) {
                                     if (isSubActive) "PRO Member • ${userProfile.email}" else userProfile.email
                                 } else item.subtitle,
@@ -500,6 +501,18 @@ private fun ExactDrawerCardItem(
         }
     } else null
 
+    val profileTextBrush = remember {
+        Brush.horizontalGradient(
+            colors = listOf(
+                Color(0xFFE11D48), // Rose Red
+                Color(0xFF9333EA), // Royal Violet
+                Color(0xFF2563EB), // Electric Blue
+                Color(0xFF059669), // Emerald Green
+                Color(0xFFD97706)  // Luxurious Gold
+            )
+        )
+    }
+
     Surface(
         onClick = onClick,
         shape = cardShape,
@@ -549,13 +562,15 @@ private fun ExactDrawerCardItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    if (item.hasLeftBarAccent) {
+                    if (item.hasLeftBarAccent || isProfileItem) {
                         Box(
                             modifier = Modifier
                                 .width(4.dp)
                                 .height(28.dp)
                                 .clip(CircleShape)
-                                .background(Color(item.leftBarColorHex))
+                                .background(
+                                    if (isProfileItem) profileTextBrush else Brush.verticalGradient(listOf(Color(item.leftBarColorHex), Color(item.leftBarColorHex)))
+                                )
                         )
                     }
 
@@ -570,7 +585,7 @@ private fun ExactDrawerCardItem(
                             Icon(
                                 imageVector = getIconByName(item.iconName, Icons.Default.Circle),
                                 contentDescription = displayTitle,
-                                tint = iconTint,
+                                tint = if (isProfileItem) Color.White else iconTint,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -579,15 +594,29 @@ private fun ExactDrawerCardItem(
                     Column(
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = displayTitle,
-                            color = titleColor,
-                            fontWeight = titleFontWeight,
-                            fontFamily = titleFontFamily,
-                            fontSize = item.titleFontSizeSp.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        if (isProfileItem) {
+                            Text(
+                                text = displayTitle,
+                                style = TextStyle(
+                                    brush = profileTextBrush,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = titleFontFamily,
+                                    fontSize = (item.titleFontSizeSp + 0.5f).sp
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        } else {
+                            Text(
+                                text = displayTitle,
+                                color = titleColor,
+                                fontWeight = titleFontWeight,
+                                fontFamily = titleFontFamily,
+                                fontSize = item.titleFontSizeSp.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                         if (!displaySubtitle.isNullOrEmpty()) {
                             Text(
                                 text = displaySubtitle,
